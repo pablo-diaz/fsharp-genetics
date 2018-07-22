@@ -1,21 +1,32 @@
-namespace Genetica
+namespace Genetics
 
-module Tipos = 
+module Types = 
     type DNA<'T> = {
         Fitness: float
         Genes: 'T array
     }
 
-module Operaciones =
-    open Tipos
+module DNAOperations =
+    open Types
 
     let calculateFitness fitnessFn index sourceDna =
-        {sourceDna with Fitness = fitnessFn index}
+        {sourceDna with 
+            Fitness = fitnessFn index}
 
-    let crossOver (randomizer:System.Random) parentDna sourceDna =
-        let getRandomValueFor index = if randomizer.NextDouble() < 0.5 then sourceDna.Genes.[index] else parentDna.Genes.[index]
-        { Fitness = 0.0; Genes = Array.init sourceDna.Genes.Length getRandomValueFor }
+    let crossOverWith (randomizer:System.Random) parentDna sourceDna =
+        let getRandomValueForGeneAt index = 
+            if randomizer.NextDouble() < 0.5 then 
+                sourceDna.Genes.[index] 
+            else 
+                parentDna.Genes.[index]
+        { Fitness = 0.0
+          Genes = Array.init sourceDna.Genes.Length getRandomValueForGeneAt }
 
     let mutate (randomizer:System.Random) getRandomGeneFn mutationRate sourceDna =
-        let getMutatedValueFor original = if randomizer.NextDouble() < mutationRate then getRandomGeneFn() else original
-        {sourceDna with Genes = Array.init sourceDna.Genes.Length (fun i -> getMutatedValueFor sourceDna.Genes.[i]) }
+        let mutatedValue defaultValue = 
+            if randomizer.NextDouble() < mutationRate then 
+                getRandomGeneFn() 
+            else 
+                defaultValue
+        {sourceDna with 
+            Genes = Array.init sourceDna.Genes.Length (fun i -> mutatedValue sourceDna.Genes.[i]) }
